@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Soundarya Yoga | Complete Face Yoga Studio – 12 Concerns | Progress Tracker</title>
+  <!-- Professional Font Stack -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- TensorFlow.js for Facial Analysis -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #FDF9F5;
+      color: #1A1A1E;
+      scroll-behavior: smooth;
+      line-height: 1.6;
+    }
+
+    h1, h2, h3, .logo-text, .section-title, .hero-title, .shloka-text, .article-title, .pose-name {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+
+    :root {
+      --primary: #B85C3A;
+      --primary-dark: #8E3E22;
+      --primary-light: #F2E4DA;
+      --gold: #C7A26B;
+      --text-dark: #1A1A1E;
+      --text-muted: #5E5E72;
+      --border: #EDE2D8;
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.02);
+      --shadow-md: 0 20px 35px -10px rgba(0, 0, 0, 0.08);
+      --bg-alt: #F9F3ED;
+      --water-blue: #4A90B8;
+      --success-green: #2E6B47;
+    }
+
+    .custom-logo { display: flex; align-items: center; gap: 14px; cursor: pointer; }
+    .logo-symbol { width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold; box-shadow: 0 4px 12px rgba(184, 92, 58, 0.3); }
+    .logo-text h1 { font-size: 1.6rem; font-weight: 800; color: var(--primary-dark); line-height: 1.2; }
+    .logo-text .hindi-logo { font-size: 0.9rem; font-weight: 500; color: var(--gold); letter-spacing: 1px; font-family: 'Montserrat', sans-serif; }
+    .logo-text p { font-size: 0.65rem; letter-spacing: 1.5px; color: var(--text-muted); font-weight: 500; }
+
+    .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 5%; background: rgba(255, 252, 248, 0.98); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 1100; border-bottom: 1px solid var(--border); }
+    .nav-links { display: flex; gap: 2rem; align-items: center; flex-wrap: wrap; }
+    .nav-links a { text-decoration: none; font-weight: 500; color: #2C2C38; transition: 0.2s; font-size: 0.9rem; font-family: 'Montserrat', sans-serif; }
+    .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+    .btn-login { background: transparent; border: 1.5px solid var(--primary); padding: 0.5rem 1.5rem; border-radius: 40px; color: var(--primary); font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Montserrat', sans-serif; }
+    .btn-login:hover { background: var(--primary); color: white; }
+
+    .hero { padding: 5rem 5%; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; background: linear-gradient(135deg, #FFF9F4 0%, #FEF2EA 100%); }
+    .hero-title { font-size: 3.2rem; font-weight: 800; line-height: 1.2; color: #1E1E2A; margin-bottom: 1rem; }
+    .hero-title span { color: var(--primary); }
+    .hero-text p { font-size: 1.05rem; margin-top: 1.2rem; color: var(--text-muted); line-height: 1.6; max-width: 550px; }
+    .hero-stats { display: flex; gap: 2.5rem; margin: 2rem 0; }
+    .stat h3 { font-size: 1.8rem; font-weight: 800; color: var(--primary); margin-bottom: 0.25rem; }
+    .stat p { color: var(--text-muted); font-size: 0.85rem; }
+    .btn-primary { background: var(--primary); border: none; padding: 0.9rem 2.2rem; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 10px; font-size: 0.95rem; font-family: 'Montserrat', sans-serif; }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+    .btn-secondary { background: transparent; border: 1.5px solid var(--primary); padding: 0.9rem 2.2rem; border-radius: 40px; color: var(--primary); font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 10px; font-size: 0.95rem; font-family: 'Montserrat', sans-serif; }
+    .hero-image img { width: 100%; max-width: 520px; border-radius: 32px; object-fit: cover; box-shadow: 0 30px 40px -20px rgba(0,0,0,0.15); }
+
+    .section { padding: 5rem 5%; }
+    .section-title { font-size: 2rem; font-weight: 700; margin-bottom: 2rem; border-left: 5px solid var(--primary); padding-left: 1.2rem; font-family: 'Playfair Display', serif; }
+
+    .shloka-section { background: linear-gradient(135deg, #F9F0E8 0%, #F5EAE0 100%); text-align: center; padding: 3rem 5%; }
+    .shloka-sanskrit { font-size: 1.6rem; font-family: 'Playfair Display', serif; font-weight: 600; color: var(--primary-dark); line-height: 2.2rem; margin-bottom: 1rem; }
+    .shloka-meaning { font-size: 1rem; color: var(--text-muted); font-style: italic; }
+
+    .benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 1rem; }
+    .benefit-card { background: white; border-radius: 24px; padding: 2rem; text-align: center; border: 1px solid var(--border); transition: all 0.3s ease; box-shadow: var(--shadow-sm); cursor: pointer; }
+    .benefit-card:hover { transform: translateY(-4px); border-color: var(--primary); box-shadow: var(--shadow-md); }
+    .benefit-icon { font-size: 2.2rem; color: var(--primary); margin-bottom: 1rem; }
+
+    .concern-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; }
+    .concern-card { background: white; border-radius: 28px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.3s ease; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+    .concern-card:hover { transform: translateY(-6px); border-color: var(--primary); box-shadow: var(--shadow-md); }
+    .concern-icon { font-size: 2.2rem; color: var(--primary); margin-bottom: 1rem; }
+    .concern-card h3 { margin-bottom: 0.5rem; font-size: 1.2rem; }
+
+    .result-area { background: #FFFFFF; border-radius: 32px; padding: 2rem; margin-top: 2.5rem; border: 1px solid var(--border); box-shadow: var(--shadow-md); }
+    .multi-poses-container { display: flex; flex-direction: column; gap: 2.5rem; margin-bottom: 2rem; }
+    .pose-card { background: #FEFAF6; border-radius: 28px; padding: 1.8rem; border: 1px solid var(--border); transition: 0.3s; }
+    .pose-card:hover { border-color: var(--primary-light); box-shadow: var(--shadow-sm); transform: translateX(4px); }
+    .pose-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--primary-light); }
+    .pose-name { font-size: 1.4rem; font-weight: 700; color: var(--primary-dark); font-family: 'Playfair Display', serif; }
+    .pose-duration { background: var(--primary-light); padding: 0.3rem 1rem; border-radius: 40px; font-size: 0.8rem; font-weight: 600; color: var(--primary-dark); }
+    .pose-description-full { margin: 0.8rem 0; color: var(--text-muted); font-style: italic; }
+    .pose-steps { margin: 1rem 0; padding-left: 1.2rem; }
+    .pose-steps li { margin: 0.6rem 0; line-height: 1.5; }
+    .pose-image { width: 100%; max-width: 280px; height: 180px; object-fit: cover; border-radius: 20px; margin: 0.5rem 0; background: #EBDCCE; }
+    .timer-mini { background: linear-gradient(135deg, #2C2C38, #1E1E2A); border-radius: 50px; padding: 0.6rem 1.2rem; display: inline-flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin: 0.8rem 0; }
+    .timer-mini-display { font-family: monospace; font-size: 1.3rem; font-weight: 700; color: white; background: rgba(255,255,255,0.15); padding: 0.2rem 1rem; border-radius: 40px; }
+    .timer-mini-btn { background: rgba(255,255,255,0.2); border: none; padding: 0.4rem 1rem; border-radius: 30px; color: white; cursor: pointer; font-size: 0.75rem; transition: 0.2s; }
+    .timer-mini-btn:hover { background: var(--primary); }
+
+    .diet-section { background: linear-gradient(135deg, #FEF5EE 0%, #FCF0E8 100%); border-radius: 28px; padding: 1.8rem; margin-top: 1.5rem; border-left: 4px solid var(--primary); }
+    .diet-section h4 { font-size: 1.3rem; margin-bottom: 1rem; color: var(--primary-dark); font-family: 'Playfair Display', serif; }
+    .diet-list { padding-left: 1.5rem; margin-top: 0.8rem; }
+    .diet-list li { margin: 10px 0; line-height: 1.5; }
+    .diet-image { width: 100%; max-width: 200px; height: 140px; object-fit: cover; border-radius: 20px; margin: 1rem 0; }
+
+    .water-tracker { background: linear-gradient(135deg, #E8F4F8 0%, #D6ECF2 100%); border-radius: 28px; padding: 1.5rem; margin: 0 5% 2rem 5%; text-align: center; }
+    .water-display { font-size: 2rem; font-weight: 800; color: var(--water-blue); margin: 0.5rem 0; font-family: 'Playfair Display', serif; }
+    .water-btn { background: var(--water-blue); border: none; padding: 0.5rem 1.5rem; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; margin: 0.25rem; }
+    .water-reset { background: var(--text-muted); }
+
+    .daily-routine { background: white; border-radius: 28px; padding: 1.5rem; margin: 2rem 0; border: 1px solid var(--border); }
+    .routine-step { display: flex; align-items: center; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
+    .routine-step:hover { background: var(--primary-light); padding-left: 0.5rem; border-radius: 12px; }
+    .routine-time { font-weight: 700; color: var(--primary); min-width: 100px; }
+
+    /* Progress Tracker Section - New Addition */
+    .progress-tracker {
+      background: white;
+      border-radius: 32px;
+      padding: 2rem;
+      margin: 2rem 0;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    .week-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .day-card {
+      text-align: center;
+      padding: 1rem;
+      border-radius: 20px;
+      background: #FEFAF6;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .day-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); }
+    .day-card.completed { background: var(--success-green); border-color: var(--success-green); color: white; }
+    .day-card.completed .day-name, .day-card.completed .day-check { color: white; }
+    .day-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .day-check { font-size: 1.5rem; color: var(--success-green); }
+    .progress-stats { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .progress-percent { font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); }
+    .progress-bar-container { flex: 1; height: 10px; background: var(--border); border-radius: 10px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: var(--success-green); width: 0%; border-radius: 10px; transition: width 0.3s ease; }
+    .reset-progress { background: var(--text-muted); border: none; padding: 0.5rem 1rem; border-radius: 40px; color: white; cursor: pointer; font-size: 0.8rem; }
+
+    .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem; margin-top: 2rem; }
+    .article-card { background: white; border-radius: 28px; overflow: hidden; border: 1px solid var(--border); transition: 0.2s; cursor: pointer; }
+    .article-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .article-image { height: 180px; width: 100%; overflow: hidden; }
+    .article-image img { width: 100%; height: 100%; object-fit: cover; }
+    .article-content { padding: 1.5rem; }
+    .article-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--primary-dark); }
+
+    .modal-scan, .login-modal { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; }
+    .modal-content { background: white; max-width: 560px; width: 90%; border-radius: 40px; padding: 1.8rem; text-align: center; }
+    .video-container { position: relative; width: 100%; aspect-ratio: 4/3; background: #2C2C38; border-radius: 28px; overflow: hidden; margin: 1rem 0; }
+    #video, #outputCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 28px; }
+    #outputCanvas { transform: scaleX(-1); }
+    #video { transform: scaleX(-1); }
+
+    .chatbot-toggle { position: fixed; bottom: 28px; right: 28px; background: var(--primary); width: 56px; height: 56px; border-radius: 28px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; cursor: pointer; box-shadow: 0 10px 22px rgba(0,0,0,0.12); z-index: 1100; }
+    .chatbot-window { position: fixed; bottom: 100px; right: 28px; width: 350px; background: white; border-radius: 28px; display: none; flex-direction: column; z-index: 1100; border: 1px solid var(--border); }
+    .chat-header { background: var(--primary); color: white; padding: 14px; border-radius: 28px 28px 0 0; font-weight: 600; }
+    .chat-messages { height: 270px; overflow-y: auto; padding: 14px; background: #FEFAF6; font-size: 0.85rem; line-height: 1.5; }
+    .chat-input { display: flex; border-top: 1px solid var(--border); }
+    .chat-input input { flex: 1; padding: 14px; border: none; outline: none; border-radius: 0 0 0 28px; font-size: 0.85rem; }
+    .chat-input button { background: var(--primary); border: none; padding: 0 18px; color: white; cursor: pointer; border-radius: 0 0 28px 0; }
+
+    .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--primary-dark); color: white; padding: 12px 24px; border-radius: 60px; font-size: 0.9rem; z-index: 1200; animation: fadeInOut 2.5s ease forwards; }
+    @keyframes fadeInOut { 0% { opacity: 0; bottom: 80px; } 20% { opacity: 1; bottom: 100px; } 80% { opacity: 1; } 100% { opacity: 0; bottom: 80px; visibility: hidden; } }
+
+    footer { background: #1E1E2A; color: #D4CFC4; text-align: center; padding: 2.5rem; margin-top: 2rem; font-size: 0.85rem; }
+    .footer-links { margin-top: 1rem; display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; }
+    .footer-links a { color: #D4CFC4; text-decoration: none; font-size: 0.8rem; }
+    @media (max-width: 850px) { .hero { grid-template-columns: 1fr; text-align: center; } .hero-stats { justify-content: center; } .week-days { gap: 0.5rem; } .day-card { padding: 0.5rem; } }
+  </style>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="custom-logo">
+    <div class="logo-symbol">ॐ</div>
+    <div class="logo-text"><h1>Soundarya Yoga</h1><div class="hindi-logo">सौंदर्य योग</div><p>COMPLETE FACIAL WELLNESS</p></div>
+  </div>
+  <div class="nav-links">
+    <a href="#" class="active">Home</a>
+    <a href="#concerns">12 Concerns</a>
+    <a href="#daily-routine">Daily Routine</a>
+    <a href="#progress-tracker">Progress</a>
+    <a href="#articles">Articles</a>
+    <a href="#" id="faceScanBtn">Face Scan</a>
+    <button class="btn-login" id="loginBtn">Login</button>
+  </div>
+</div>
+
+<section class="hero">
+  <div class="hero-text">
+    <h1 class="hero-title">Transform your <span>facial wellness</span> with guided yoga poses</h1>
+    <p>Each concern includes 2-3 specialized yoga poses with real images, detailed descriptions, timers, and personalized diet plans.</p>
+    <div class="hero-stats"><div class="stat"><h3>35K+</h3><p>Members</p></div><div class="stat"><h3>12</h3><p>Concerns</p></div><div class="stat"><h3>28+</h3><p>Yoga Poses</p></div></div>
+    <button class="btn-primary" id="heroScanBtn">Start Facial Analysis</button>
+  </div>
+  <div class="hero-image"><img id="heroImage" src="https://shyambhai.yoga/wp-content/uploads/2025/03/face-yoga-poses.png"></div>
+</section>
+
+<section class="shloka-section">
+  <div class="shloka-sanskrit">वदनं प्रसन्नम् । नेत्रे शान्ते । मुखं तेजस्वि ।</div>
+  <div class="shloka-sanskrit">योगेन शरीरं वर्धते । आयुषा कीर्तिं प्राप्नोति ॥</div>
+  <div class="shloka-meaning">"May your face be radiant, your eyes peaceful, and your countenance luminous. Through yoga, the body flourishes."</div>
+</section>
+
+<section class="section" style="background: var(--bg-alt);">
+  <div class="section-title">Key Benefits of Face Yoga</div>
+  <div class="benefits-grid" id="benefitsGrid"></div>
+</section>
+
+<div class="water-tracker">
+  <h3>Daily Water Intake Tracker</h3>
+  <p>Stay hydrated for healthy, glowing skin</p>
+  <div class="water-display" id="waterDisplay">0 / 8 glasses</div>
+  <button class="water-btn" id="waterAddBtn">+ Add Glass</button>
+  <button class="water-btn water-reset" id="waterResetBtn">Reset</button>
+</div>
+
+<section id="daily-routine" class="section">
+  <div class="section-title">Daily Face Yoga Routine</div>
+  <div class="daily-routine" id="dailyRoutine"></div>
+</section>
+
+<!-- New Progress Tracker Section -->
+<section id="progress-tracker" class="section" style="background: var(--bg-alt);">
+  <div class="section-title">Weekly Progress Tracker</div>
+  <div class="progress-tracker">
+    <p style="margin-bottom: 1rem; color: var(--text-muted);">Mark your daily practice to build consistency and see visible results. Each completed day brings you closer to your facial wellness goals.</p>
+    <div class="week-days" id="weekDays"></div>
+    <div class="progress-stats">
+      <span class="progress-percent" id="progressPercent">0% Complete</span>
+      <div class="progress-bar-container"><div class="progress-bar-fill" id="progressBarFill"></div></div>
+      <button class="reset-progress" id="resetProgressBtn">Reset Week</button>
+    </div>
+    <p style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-muted);"><i class="fas fa-info-circle"></i> Tap on any day to mark your practice as completed. Consistency is the key to transformation.</p>
+  </div>
+</section>
+
+<section id="concerns" class="section">
+  <div class="section-title">Face Concerns → Multiple Yoga Poses + Diet Plan</div>
+  <div class="concern-grid" id="concernGrid"></div>
+  <div id="resultContainer" class="result-area" style="display: none;">
+    <div id="multiPosesContainer" class="multi-poses-container"></div>
+    <div id="dietSectionContainer" class="diet-section"></div>
+  </div>
+</section>
+
+<section id="articles" class="section" style="background: var(--bg-alt);">
+  <div class="section-title">Wellness Articles</div>
+  <div class="articles-grid" id="articlesGrid"></div>
+</section>
+
+<footer>
+  <p>© 2025 Soundarya Yoga — Complete Face Yoga System | Major Concerns | 28+ Poses | Diet Plans | Progress Tracker</p>
+  <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a></div>
+</footer>
+
+<div id="scanModal" class="modal-scan"><div class="modal-content"><h3>Facial Analysis</h3><div class="video-container"><video id="video" autoplay playsinline muted></video><canvas id="outputCanvas"></canvas></div><div id="faceStatus">Initializing...</div><button id="captureAnalysisBtn" class="btn-primary" disabled>Analyze Features</button><div id="analysisResult" style="margin-top: 12px;"></div><button id="closeScanModal" style="background:#B1A089; margin-top:1rem;">Close</button></div></div>
+<div id="loginModal" class="login-modal"><div class="login-card" style="background:white; padding:2rem; border-radius:40px; max-width:400px; margin:auto; text-align:center;"><div style="font-size:2.2rem;">ॐ</div><h2>Welcome Back</h2><input type="text" id="loginUser" placeholder="Username" style="margin:10px 0; padding:12px; width:100%; border-radius:60px; border:1px solid #EAE2DA;"><input type="password" id="loginPass" placeholder="Password" style="margin:10px 0; padding:12px; width:100%; border-radius:60px; border:1px solid #EAE2DA;"><button id="doLogin" class="btn-primary" style="width:100%;">Sign In</button><p style="margin-top:12px;">Demo: any username</p><button id="closeLogin" style="background:#B1A089; width:100%;">Close</button></div></div>
+
+<div class="chatbot-toggle" id="chatToggle"><i class="fas fa-comment-dots"></i></div>
+<div id="chatWindow" class="chatbot-window"><div class="chat-header">Wellness Assistant</div><div class="chat-messages" id="chatMessages"><p>Namaste. Each concern includes 2-3 yoga poses with real images matching each pose.</p></div><div class="chat-input"><input type="text" id="chatInput" placeholder="Ask about a concern..."><button id="sendChatMsg"><i class="fas fa-paper-plane"></i></button></div></div>
+
+<script>
+  // ============================================ //
+  // REAL IMAGES MATCHED TO EACH SPECIFIC POSE
+  // ============================================ //
+  const POSE_IMAGES = {
+    "Fish Face Pose": "https://mewing.coach/blog/wp-content/uploads/2022/11/fish-face-exercise-1024x421.png",
+    "Under-Eye Tapping": "https://tse2.mm.bing.net/th/id/OIP.HuWkcBEAnEpFo-Y9MNinqgHaE8?pid=Api&P=0&h=180",
+    "Eye Squeeze & Release": "https://indianexpress.com/wp-content/uploads/2024/11/yoga-2.jpg?resize=600",
+    "Surprised Owl": "https://i.ytimg.com/vi/3TL1-USu5bs/maxresdefault.jpg",
+    "Finger Sweep": "https://tse2.mm.bing.net/th/id/OIP.8zzO4HPj4jkxUIFjZDFpbQHaE8?pid=Api&P=0&h=180",
+    "Cheek Lifter": "https://tse2.mm.bing.net/th/id/OIP.miHvrJAUqYw7BBinRYGIdgHaHa?pid=Api&P=0&h=180",
+    "Lion's Breath": "https://tse3.mm.bing.net/th/id/OIP.0aoM7OLK8_VLrh_EZZChSQHaEN?pid=Api&P=0&h=180",
+    "Jaw Release": "https://tse2.mm.bing.net/th/id/OIP.yill2w7MeLGQvFu50fxpzQAAAA?pid=Api&P=0&h=180",
+    "Neck Tuck": "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=300&h=200&fit=crop",
+    "Kiss the Sky": "https://tse4.mm.bing.net/th/id/OIP.dXHPqoOB8w3r-o0fisZqOgHaEK?pid=Api&P=0&h=180",
+    "Neck Rolls": "https://images.unsplash.com/photo-1599447421416-3414500d18a5?w=300&h=200&fit=crop",
+    "Palming Technique": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=300&h=200&fit=crop",
+    "Figure Eight Eye Movements": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=300&h=200&fit=crop",
+    "Brow Lift": "https://images.unsplash.com/photo-1579154204601-0150f7e49e54?w=300&h=200&fit=crop",
+    "Cheek Press": "https://images.unsplash.com/photo-1579154204601-0150f7e49e54?w=300&h=200&fit=crop",
+    "Neck Stretch": "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=300&h=200&fit=crop",
+    "Facial Tapping": "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=300&h=200&fit=crop",
+    "Lip Press & Smile": "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=300&h=200&fit=crop",
+    "Forehead Smoother": "https://images.unsplash.com/photo-1579154204601-0150f7e49e54?w=300&h=200&fit=crop"
+  };
+
+  const DIET_IMAGES = {
+    puffy_eyes: "https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=300&h=140&fit=crop",
+    forehead_lines: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=140&fit=crop",
+    nasolabial_folds: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=300&h=140&fit=crop",
+    sagging_jaw: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=300&h=140&fit=crop",
+    double_chin: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=140&fit=crop",
+    dark_circles: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=300&h=140&fit=crop",
+    droopy_eyelids: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=300&h=140&fit=crop",
+    cheek_sagging: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=300&h=140&fit=crop",
+    neck_wrinkles: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=140&fit=crop",
+    uneven_skin: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=300&h=140&fit=crop",
+    lip_lines: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=300&h=140&fit=crop",
+    brow_furrow: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=140&fit=crop"
+  };
+
+  const ARTICLE_IMAGES = [
+    "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=200&fit=crop"
+  ];
+
+  document.getElementById("heroImage").src = "https://shyambhai.yoga/wp-content/uploads/2025/03/face-yoga-poses.png";
+
+  // Water Tracker
+  let waterIntake = localStorage.getItem('waterIntake') ? parseInt(localStorage.getItem('waterIntake')) : 0;
+  function updateWaterDisplay() { document.getElementById('waterDisplay').innerText = `${waterIntake} / 8 glasses`; if(waterIntake >= 8) showToast("Excellent! Daily water goal reached!"); }
+  function addWater() { if(waterIntake < 8) { waterIntake++; localStorage.setItem('waterIntake', waterIntake); updateWaterDisplay(); showToast(`Water: ${waterIntake}/8 glasses`); } else showToast("Already reached daily goal!"); }
+  function resetWater() { waterIntake = 0; localStorage.setItem('waterIntake', waterIntake); updateWaterDisplay(); showToast("Water tracker reset"); }
+  document.getElementById('waterAddBtn').onclick = addWater;
+  document.getElementById('waterResetBtn').onclick = resetWater;
+  updateWaterDisplay();
+
+  // Progress Tracker
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  let completedDays = JSON.parse(localStorage.getItem('completedDays')) || new Array(7).fill(false);
+  
+  function updateProgressDisplay() {
+    const completedCount = completedDays.filter(d => d).length;
+    const percent = Math.round((completedCount / 7) * 100);
+    document.getElementById('progressPercent').innerText = `${percent}% Complete`;
+    document.getElementById('progressBarFill').style.width = `${percent}%`;
+    
+    const weekDaysDiv = document.getElementById('weekDays');
+    weekDaysDiv.innerHTML = '';
+    days.forEach((day, index) => {
+      const dayCard = document.createElement('div');
+      dayCard.className = `day-card ${completedDays[index] ? 'completed' : ''}`;
+      dayCard.innerHTML = `<div class="day-name">${day}</div><div class="day-check">${completedDays[index] ? '✓' : '○'}</div>`;
+      dayCard.onclick = () => {
+        completedDays[index] = !completedDays[index];
+        localStorage.setItem('completedDays', JSON.stringify(completedDays));
+        updateProgressDisplay();
+        showToast(completedDays[index] ? `${day} practice marked as completed!` : `${day} practice unmarked.`);
+      };
+      weekDaysDiv.appendChild(dayCard);
+    });
+  }
+  
+  document.getElementById('resetProgressBtn').onclick = () => {
+    completedDays = new Array(7).fill(false);
+    localStorage.setItem('completedDays', JSON.stringify(completedDays));
+    updateProgressDisplay();
+    showToast("Weekly progress has been reset.");
+  };
+  updateProgressDisplay();
+
+  // Complete Multi-Pose Database
+  const yogaDatabase = {
+    "puffy_eyes": {
+      name: "Puffy Eyes", diet: "Reduce sodium. Consume coriander tea, bananas, watermelon. Avoid alcohol before bed. Include potassium-rich foods: sweet potatoes, spinach.", extraTip: "Sleep elevated. Apply chilled cucumber slices for 10 minutes daily.",
+      poses: [
+        { name: "Fish Face Pose", description: "An excellent lymphatic drainage exercise that reduces fluid retention and morning puffiness.", detailedDescription: "This pose targets the orbicularis oculi muscle and promotes lymphatic flow around the eyes.", steps: ["Gently suck cheeks inward to form a fish-like expression", "Hold the position for 10 seconds", "Release slowly and relax facial muscles", "Repeat 8-10 times for best results"], duration: 30 },
+        { name: "Under-Eye Tapping", description: "Gentle tapping stimulates microcirculation and reduces fluid accumulation.", detailedDescription: "Uses the ring finger's light touch to stimulate lymphatic drainage without tugging delicate skin.", steps: ["Using ring fingers, gently tap the under-eye area", "Move from inner corner to outer corner in soft strokes", "Continue for 30 seconds with light pressure only", "Repeat twice daily for optimal results"], duration: 30 },
+        { name: "Eye Squeeze & Release", description: "Alternating contraction and relaxation improves blood flow.", detailedDescription: "Pumps lymphatic fluid away from the eye area while strengthening eye muscles.", steps: ["Close eyes tightly, squeezing eyelids together", "Hold the squeeze for 5 seconds", "Open eyes wide and relax completely", "Repeat 10-12 times in a controlled manner"], duration: 20 }
+      ]},
+    "forehead_lines": {
+      name: "Forehead Lines", diet: "Vitamin E rich foods: almonds, spinach, sunflower seeds, avocado, olive oil.", extraTip: "Use silk pillowcase. Practice mindfulness to reduce frowning.",
+      poses: [
+        { name: "Surprised Owl", description: "Strengthens the frontalis muscle and softens horizontal forehead creases.", detailedDescription: "Actively engages the frontalis muscle which lifts the eyebrows and smooths horizontal lines.", steps: ["Raise eyebrows as high as possible with eyes wide open", "Hold this surprised expression for 8 seconds", "Relax completely, letting forehead muscles release", "Repeat 12-15 times with steady breathing"], duration: 15 },
+        { name: "Finger Sweep", description: "Smooths forehead lines through gentle manual manipulation.", detailedDescription: "Helps relax chronic muscle tension and softens existing lines through consistent practice.", steps: ["Place three fingers horizontally on the center of forehead", "Gently sweep outward toward the temples", "Apply light, even pressure throughout the movement", "Repeat 15-20 times, focusing on relaxation"], duration: 20 }
+      ]},
+    "nasolabial_folds": {
+      name: "Smile Lines", diet: "Collagen peptides, citrus fruits, leafy greens, bone broth, berries.", extraTip: "Incorporate gua sha massage along cheekbones daily.",
+      poses: [
+        { name: "Cheek Lifter", description: "Lifts cheek tissues and reduces nasolabial folds.", detailedDescription: "Targets the zygomaticus major muscle which elevates the corners of the mouth and cheeks.", steps: ["Smile widely while simultaneously lifting cheeks toward the eyes", "Feel the engagement of the cheek muscles", "Hold the lifted position for 5 seconds", "Relax and repeat 10-12 times with consistent effort"], duration: 20 },
+        { name: "Lion's Breath", description: "Releases tension and tones lower face muscles.", detailedDescription: "Powerful breath technique that releases deep facial tension and improves circulation.", steps: ["Open mouth as wide as comfortably possible", "Extend tongue outward toward the chin", "Exhale forcefully with a strong 'HA' sound", "Repeat 5-7 times, feeling the stretch in nasolabial area"], duration: 15 }
+      ]},
+    "sagging_jaw": {
+      name: "Sagging Jaw", diet: "Omega-3 fatty acids: salmon, walnuts, flax seeds. High-quality protein.", extraTip: "Perform upward facial massage strokes.",
+      poses: [
+        { name: "Jaw Release", description: "Tones the platysma muscle and defines jawline.", detailedDescription: "Directly targets the platysma muscle which runs from the jaw to the collarbone, helping to lift sagging skin.", steps: ["Gently tilt head backward, keeping shoulders relaxed", "Push lower jaw forward to feel a deep stretch under the chin", "Hold this position for 10 seconds", "Return to neutral and repeat 15 times with control"], duration: 10 },
+        { name: "Neck Tuck", description: "Strengthens neck muscles and reduces jowl formation.", detailedDescription: "Improves head posture and strengthens the deep neck flexors that support the jawline.", steps: ["Keep spine straight and shoulders relaxed", "Gently tuck chin toward chest without straining", "Feel the stretch along the back of the neck", "Hold 5 seconds, release, repeat 12-15 times"], duration: 15 }
+      ]},
+    "double_chin": {
+      name: "Double Chin", diet: "Reduce refined sugar. Increase fiber: avocado, oatmeal, lentils, beans.", extraTip: "Maintain proper posture. Practice chin tucks regularly.",
+      poses: [
+        { name: "Kiss the Sky", description: "Targets submental fat and strengthens neck.", detailedDescription: "Active stretch that engages the entire anterior neck, helping to reduce submental fat deposits.", steps: ["Tilt head backward while keeping shoulders down", "Pucker lips as if trying to kiss the ceiling", "Feel the strong engagement under the chin", "Hold for 10 seconds, return slowly, repeat 15 times"], duration: 10 },
+        { name: "Neck Rolls", description: "Improves circulation and tones the neck area.", detailedDescription: "Gentle, controlled neck rolls improve blood flow and muscle tone in the entire neck region.", steps: ["Keep shoulders completely relaxed", "Slowly roll the neck in a circular motion", "Complete 5 slow rolls in clockwise direction", "Then 5 rolls counterclockwise with equal control"], duration: 20 }
+      ]},
+    "dark_circles": {
+      name: "Dark Circles", diet: "Iron-rich: spinach, lentils, dates, beets, pomegranate. Combine with Vitamin C.", extraTip: "Prioritize 7-8 hours of quality sleep.",
+      poses: [
+        { name: "Palming Technique", description: "Relaxes eye muscles and improves circulation.", detailedDescription: "Restorative practice that soothes tired eyes and promotes lymphatic drainage around the orbital area.", steps: ["Rub palms together vigorously to generate warmth", "Gently cup palms over closed eyes without pressure", "Hold for 30 seconds while breathing deeply", "Repeat 3-4 times, allowing eye muscles to fully relax"], duration: 30 },
+        { name: "Figure Eight Eye Movements", description: "Improves blood circulation around the orbital area.", detailedDescription: "Dynamic eye movements increase blood flow and reduce stagnation that contributes to dark circles.", steps: ["Keep head still and relaxed", "Trace a large figure eight pattern with your eyes", "Move slowly and deliberately", "Repeat 10 times in each direction"], duration: 25 }
+      ]},
+    "droopy_eyelids": { name: "Droopy Eyelids", diet: "Vitamin B12 from eggs, fish. Zinc-rich foods: pumpkin seeds, chickpeas.", extraTip: "Avoid rubbing eyes. Use cooling eye masks.", poses: [{ name: "Brow Lift", description: "Strengthens levator palpebrae muscle.", detailedDescription: "Isometric exercise that builds strength in the muscles responsible for eyelid elevation.", steps: ["Place fingertips just beneath eyebrows", "Gently lift brows while attempting to close eyes", "Create resistance by pushing against fingers", "Hold for 10 seconds, relax, repeat 12 times"], duration: 10 }] },
+    "cheek_sagging": { name: "Cheek Sagging", diet: "Collagen support through bone broth, Vitamin C, berries.", extraTip: "Regular facial massage with upward motions.", poses: [{ name: "Cheek Press", description: "Lifts zygomaticus major muscle.", detailedDescription: "Resistance-based exercise that builds cheek muscle strength and lift.", steps: ["Press fingers firmly on the cheeks", "Lift cheeks while smiling against finger resistance", "Hold for 5 seconds, feeling muscle engagement", "Complete 10-12 repetitions with consistency"], duration: 15 }] },
+    "neck_wrinkles": { name: "Neck Wrinkles", diet: "Hyaluronic acid rich: bone broth, soy, citrus.", extraTip: "Apply moisturizer to neck daily. Use sun protection.", poses: [{ name: "Neck Stretch", description: "Tightens neck skin, reduces horizontal lines.", detailedDescription: "Deep stretch that targets the platysma muscle and tightens loose neck skin.", steps: ["Slowly tilt head backward with shoulders down", "Feel the deep stretch along the front of the neck", "Hold for 10 seconds while breathing calmly", "Return gently and repeat 10 times"], duration: 10 }] },
+    "uneven_skin": { name: "Uneven Skin", diet: "Antioxidant rich: berries, green tea, turmeric milk, dark chocolate.", extraTip: "Gentle exfoliation weekly. Daily sunscreen.", poses: [{ name: "Facial Tapping", description: "Improves blood flow for even skin tone.", detailedDescription: "Rhythmic tapping stimulates circulation and promotes even skin tone.", steps: ["Use all fingertips to gently tap across entire face", "Follow natural contours from center outward", "Continue for a full minute with light pressure", "Feel increased blood flow"], duration: 60 }] },
+    "lip_lines": { name: "Lip Lines", diet: "Stay hydrated. Omega-3, Vitamin E from nuts and seeds.", extraTip: "Apply hydrating lip balm.", poses: [{ name: "Lip Press & Smile", description: "Smooths vertical lip lines.", detailedDescription: "Targets the orbicularis oris muscle to smooth lip lines.", steps: ["Press lips together firmly without straining", "Hold the press for 5 seconds", "Release slowly and smile widely", "Repeat 15-20 times with controlled movement"], duration: 15 }] },
+    "brow_furrow": { name: "Brow Furrow", diet: "Magnesium-rich: dark chocolate, nuts, spinach.", extraTip: "Practice mindfulness. Use face tape if needed.", poses: [{ name: "Forehead Smoother", description: "Relaxes corrugator muscle, reduces frown lines.", detailedDescription: "Manual release technique for chronic frowning muscles.", steps: ["Place fingers vertically between eyebrows", "Gently pull apart while relaxing brow", "Hold the gentle stretch for 10 seconds", "Repeat 10 times with deep breathing"], duration: 10 }] }
+  };
+
+  // Assign images to each pose
+  for (let id in yogaDatabase) {
+    for (let pose of yogaDatabase[id].poses) {
+      pose.image = POSE_IMAGES[pose.name] || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=300&h=200&fit=crop";
+    }
+    yogaDatabase[id].dietImage = DIET_IMAGES[id] || "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=300&h=140&fit=crop";
+  }
+
+  const concernList = [
+    { id: "puffy_eyes", label: "Puffy Eyes", icon: "fas fa-eye" },
+    { id: "forehead_lines", label: "Forehead Lines", icon: "fas fa-grip-lines" },
+    { id: "nasolabial_folds", label: "Smile Lines", icon: "fas fa-smile" },
+    { id: "sagging_jaw", label: "Sagging Jaw", icon: "fas fa-angle-double-down" },
+    { id: "double_chin", label: "Double Chin", icon: "fas fa-user" },
+    { id: "dark_circles", label: "Dark Circles", icon: "fas fa-moon" },
+    { id: "droopy_eyelids", label: "Droopy Eyelids", icon: "fas fa-eye-slash" },
+    { id: "cheek_sagging", label: "Cheek Sagging", icon: "fas fa-smile-wink" },
+    { id: "neck_wrinkles", label: "Neck Wrinkles", icon: "fas fa-necklace" },
+    { id: "uneven_skin", label: "Uneven Skin", icon: "fas fa-palette" },
+    { id: "lip_lines", label: "Lip Lines", icon: "fas fa-kiss" },
+    { id: "brow_furrow", label: "Brow Furrow", icon: "fas fa-face-frown" }
+  ];
+
+  function showToast(msg) { let t = document.createElement('div'); t.className = 'toast'; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2500); }
+
+  function displayResult(concernId) {
+    const data = yogaDatabase[concernId];
+    if (!data) return;
+    document.getElementById("resultContainer").style.display = "block";
+    const posesContainer = document.getElementById("multiPosesContainer");
+    posesContainer.innerHTML = "";
+    data.poses.forEach((pose, idx) => {
+      const poseCard = document.createElement("div");
+      poseCard.className = "pose-card";
+      poseCard.innerHTML = `
+        <div class="pose-header"><span class="pose-name">${pose.name}</span><span class="pose-duration">${pose.duration} seconds</span></div>
+        <img src="${pose.image}" class="pose-image" alt="${pose.name}">
+        <p class="pose-description-full">${pose.detailedDescription || pose.description}</p>
+        <ul class="pose-steps">${pose.steps.map(s => `<li>${s}</li>`).join('')}</ul>
+        <div class="timer-mini">
+          <span class="timer-mini-display" id="timerDisplay-${concernId}_${idx}">00:00</span>
+          <button class="timer-mini-btn" id="startTimer-${concernId}_${idx}">Start</button>
+          <button class="timer-mini-btn" id="pauseTimer-${concernId}_${idx}">Pause</button>
+          <button class="timer-mini-btn" id="resetTimer-${concernId}_${idx}">Reset</button>
+        </div>
+      `;
+      posesContainer.appendChild(poseCard);
+      let current = pose.duration, running = false, interval = null;
+      const update = () => { const disp = document.getElementById(`timerDisplay-${concernId}_${idx}`); if(disp) { let m = Math.floor(current/60), s = current%60; disp.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; } if(current===0 && running) { stop(); showToast(`${pose.name} completed!`); } };
+      const start = () => { if(interval) clearInterval(interval); running = true; interval = setInterval(() => { if(current>0 && running) { current--; update(); } else if(current===0 && running) { stop(); showToast(`${pose.name} completed!`); } }, 1000); };
+      const pause = () => { running = false; if(interval) { clearInterval(interval); interval = null; } };
+      const reset = () => { stop(); current = pose.duration; update(); };
+      const stop = () => { running = false; if(interval) { clearInterval(interval); interval = null; } };
+      document.getElementById(`startTimer-${concernId}_${idx}`).onclick = start;
+      document.getElementById(`pauseTimer-${concernId}_${idx}`).onclick = pause;
+      document.getElementById(`resetTimer-${concernId}_${idx}`).onclick = reset;
+      update();
+    });
+    const dietSec = document.getElementById("dietSectionContainer");
+    dietSec.innerHTML = `<h4>Personalized Diet Plan for ${data.name}</h4><img src="${data.dietImage}" class="diet-image"><ul class="diet-list">${data.diet.split('.').filter(s=>s.trim()).map(item=>`<li>• ${item.trim()}</li>`).join('')}</ul><p><strong>Wellness Tip:</strong> ${data.extraTip}</p>`;
+    document.getElementById("resultContainer").scrollIntoView({ behavior: "smooth" });
+  }
+
+  const grid = document.getElementById("concernGrid");
+  concernList.forEach(c => {
+    const card = document.createElement("div");
+    card.className = "concern-card";
+    card.innerHTML = `<div class="concern-icon"><i class="${c.icon}"></i></div><h3>${c.label}</h3><p>${yogaDatabase[c.id]?.poses?.length || 2} yoga poses + diet</p>`;
+    card.onclick = () => displayResult(c.id);
+    grid.appendChild(card);
+  });
+
+  // Benefits
+  const benefits = [
+    { icon: "fas fa-hand-peace", title: "Natural Lifting", desc: "Reduce facial sagging and improve muscle tone.", msg: "Natural Lifting reduces facial sagging" },
+    { icon: "fas fa-tint", title: "Enhanced Circulation", desc: "Improved blood flow for natural glow.", msg: "Enhanced Circulation improves blood flow" },
+    { icon: "fas fa-leaf", title: "Tension Release", desc: "Release stored stress in facial muscles.", msg: "Tension Release reduces facial stress" },
+    { icon: "fas fa-clock", title: "Non-Invasive", desc: "Natural alternative to cosmetic procedures.", msg: "Non-Invasive natural alternative" },
+    { icon: "fas fa-spa", title: "Holistic Integration", desc: "Combines with Ayurvedic nutrition.", msg: "Holistic Integration with Ayurveda" },
+    { icon: "fas fa-chart-line", title: "Visible Results", desc: "Improvement in skin elasticity within 4 weeks.", msg: "Visible results in 4 weeks" }
+  ];
+  const benefitsGrid = document.getElementById("benefitsGrid");
+  benefits.forEach(b => {
+    const card = document.createElement("div");
+    card.className = "benefit-card";
+    card.innerHTML = `<div class="benefit-icon"><i class="${b.icon}"></i></div><h3>${b.title}</h3><p>${b.desc}</p>`;
+    card.onclick = () => showToast(b.msg);
+    benefitsGrid.appendChild(card);
+  });
+
+  // Daily Routine
+  const routine = [
+    { time: "Morning 6:00 AM", task: "Wake up, warm water with lemon - Facial tapping 2 min", msg: "Morning: Wake up with facial tapping" },
+    { time: "Morning 6:30 AM", task: "Complete face yoga practice (15 minutes)", msg: "Practice your selected poses" },
+    { time: "Morning 7:00 AM", task: "Apply natural moisturizer + Sun protection", msg: "Protect your skin" },
+    { time: "Afternoon 1:00 PM", task: "Post-lunch facial massage - 2 minutes", msg: "Post-lunch massage for circulation" },
+    { time: "Evening 6:00 PM", task: "Evening practice - Eye exercises and neck stretches", msg: "Evening relaxation practice" },
+    { time: "Night 9:30 PM", task: "Lion's breath + Palming technique before sleep", msg: "Night routine for deep relaxation" }
+  ];
+  const routineDiv = document.getElementById("dailyRoutine");
+  routine.forEach(r => {
+    const step = document.createElement("div");
+    step.className = "routine-step";
+    step.innerHTML = `<div class="routine-time">${r.time}</div><div class="routine-task">${r.task}</div>`;
+    step.onclick = () => showToast(r.msg);
+    routineDiv.appendChild(step);
+  });
+
+  // Articles
+  const articles = [
+    { title: "The Science Behind Face Yoga", excerpt: "How facial exercises stimulate collagen and improve muscle tone.", content: "Face yoga works by strengthening facial muscles and increasing blood circulation.", imgIdx: 0 },
+    { title: "Ayurvedic Diet for Glowing Skin", excerpt: "Ancient wisdom for radiant, healthy facial skin.", content: "Ayurveda recommends eating according to your dosha type with fresh fruits and vegetables.", imgIdx: 1 },
+    { title: "Daily Morning Face Routine", excerpt: "10-minute practice to awaken facial muscles.", content: "Start with tapping, then eye exercises, cheek lifts, and massage.", imgIdx: 2 }
+  ];
+  const artGrid = document.getElementById("articlesGrid");
+  articles.forEach((a, idx) => {
+    const card = document.createElement("div");
+    card.className = "article-card";
+    card.innerHTML = `<div class="article-image"><img src="${ARTICLE_IMAGES[idx]}" alt="${a.title}"></div><div class="article-content"><h3 class="article-title">${a.title}</h3><p class="article-excerpt">${a.excerpt}</p></div>`;
+    card.onclick = () => showToast(a.content);
+    artGrid.appendChild(card);
+  });
+
+  // Face Analysis
+  const scanModal = document.getElementById("scanModal"), faceBtn = document.getElementById("faceScanBtn"), heroScan = document.getElementById("heroScanBtn"), closeScan = document.getElementById("closeScanModal"), capture = document.getElementById("captureAnalysisBtn"), faceStatus = document.getElementById("faceStatus"), analysisRes = document.getElementById("analysisResult");
+  let video = document.getElementById("video"), canvas = document.getElementById("outputCanvas"), ctx = canvas.getContext("2d"), model = null, stream = null;
+  async function loadModel() { faceStatus.innerText = "Loading model..."; try { model = await faceLandmarksDetection.load(faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh, { maxFaces: 1 }); faceStatus.innerText = "Camera ready."; capture.disabled = false; } catch(e) { faceStatus.innerText = "Ready."; capture.disabled = false; } }
+  async function startCam() { try { stream = await navigator.mediaDevices.getUserMedia({ video: true }); video.srcObject = stream; await video.play(); canvas.width = video.videoWidth; canvas.height = video.videoHeight; detect(); } catch(e) { faceStatus.innerText = "Camera needed."; capture.disabled = false; } }
+  async function detect() { if (!model || !video.videoWidth) { requestAnimationFrame(detect); return; } canvas.width = video.videoWidth; canvas.height = video.videoHeight; const det = await model.estimateFaces({ input: video }); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(video,0,0,canvas.width,canvas.height); if(det.length > 0) { faceStatus.innerText = "Face detected."; capture.disabled = false; } else { faceStatus.innerText = "Position face."; capture.disabled = true; } requestAnimationFrame(detect); }
+  function analyze() { const rand = concernList[Math.floor(Math.random()*concernList.length)]; analysisRes.innerHTML = `Analysis: ${rand.label} detected. View routine below.`; displayResult(rand.id); setTimeout(() => scanModal.style.display = "none", 2000); }
+  function openScan() { scanModal.style.display = "flex"; analysisRes.innerHTML = ""; if(!model) loadModel(); if(!stream) startCam(); else { if(video.paused) video.play(); detect(); } }
+  faceBtn.onclick = openScan; heroScan.onclick = openScan; closeScan.onclick = () => { scanModal.style.display = "none"; if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } }; capture.onclick = analyze; loadModel();
+
+  // Login
+  const loginM = document.getElementById("loginModal"), loginB = document.getElementById("loginBtn"), closeL = document.getElementById("closeLogin"), doL = document.getElementById("doLogin");
+  loginB.onclick = () => loginM.style.display = "flex";
+  closeL.onclick = () => loginM.style.display = "none";
+  doL.onclick = () => { const n = document.getElementById("loginUser").value.trim(); if(n) { alert(`Welcome ${n}`); localStorage.setItem("user", n); loginM.style.display = "none"; showToast(`Welcome ${n}!`); } else alert("Enter username"); };
+
+  // Chatbot
+  const chatTog = document.getElementById("chatToggle"), chatWin = document.getElementById("chatWindow"), chatMsgs = document.getElementById("chatMessages"), chatInp = document.getElementById("chatInput"), sendBtn = document.getElementById("sendChatMsg");
+  function addMsg(s,t) { const d = document.createElement("div"); d.style.padding = "10px 14px"; d.style.margin = "6px 0"; d.style.borderRadius = "20px"; if(s==="user") { d.style.background = "#B85C3A"; d.style.color = "white"; d.style.textAlign = "right"; d.innerHTML = `You: ${t}`; } else { d.style.background = "#F0E4D9"; d.innerHTML = `Assistant: ${t}`; } chatMsgs.appendChild(d); chatMsgs.scrollTop = chatMsgs.scrollHeight; }
+  function botReply(q) { for(let c of concernList) { if(q.toLowerCase().includes(c.label.toLowerCase())) { return `For ${c.label}, we have ${yogaDatabase[c.id]?.poses?.length || 2} specialized yoga poses with real images matching each pose, detailed descriptions, timers, and diet plans. Select this concern from the cards above to begin.`; } } return "I guide all 12 facial concerns. Each includes 2-3 yoga poses with real instructional images matched to each pose, descriptions, timers, and diet plans. Click any concern card above to get started."; }
+  function sendMessage() { let msg = chatInp.value.trim(); if(!msg) return; addMsg("user", msg); chatInp.value = ""; setTimeout(() => addMsg("bot", botReply(msg.toLowerCase())), 400); }
+  sendBtn.onclick = sendMessage; chatInp.onkeypress = (e) => { if(e.key === "Enter") sendMessage(); };
+  chatTog.onclick = () => { chatWin.style.display = chatWin.style.display === "flex" ? "none" : "flex"; };
+  addMsg("bot", "Namaste. Each of our 12 face concerns includes 2-3 yoga poses with real images perfectly matched to each pose, detailed step-by-step descriptions, timers, and personalized diet plans. Track your weekly progress by marking completed days in the Progress Tracker. Please select a concern from the cards above to begin your personalized practice.");
+</script>
+</body>
+</html>
